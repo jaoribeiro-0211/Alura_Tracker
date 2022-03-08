@@ -35,7 +35,9 @@
 </template>
 
 <script lang="ts">
+import { TipoNotificacao } from "@/interfaces/INotificacao";
 import { key } from "@/store";
+import { NOTIFICAR } from "@/store/tipo-mutacoes";
 import { computed, defineComponent } from "vue";
 import { useStore } from "vuex";
 import Temporizador from "./Temporizador.vue";
@@ -52,6 +54,16 @@ export default defineComponent({
   components: { Temporizador },
   methods: {
     finalizarTarefa(tempoDecorrido: number): void {
+      const projeto = this.projetos.find((proj) => proj.id == this.idIprojeto);
+      if (!projeto) {
+        this.store.commit(NOTIFICAR, {
+          titulo: "Ops!",
+          texto: "Selecione um projeto antes de salvar",
+          tipo: TipoNotificacao.ATENCAO,
+        });
+        return;
+      }
+
       this.$emit("aoSalvarTarefa", {
         descricao: this.descricao,
         duracaoEmSegundos: tempoDecorrido,
@@ -65,6 +77,7 @@ export default defineComponent({
   setup() {
     const store = useStore(key);
     return {
+      store,
       projetos: computed(() => store.state.projetos),
     };
   },
